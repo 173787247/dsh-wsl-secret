@@ -1,71 +1,67 @@
 # dsh-wsl-secret
 
-> **中文文档 → [README.zh.md](./README.zh.md)** · English below
+> **语言：** **中文**（本页） · [English](./README.en.md)
 
-Read **pass** / **age** secrets into a DSH (Cordis) session — safely.
+在 DSH（Cordis）里**安全读取** pass / age 密钥。
 
 | | |
 |---|---|
 | npm | `dsh-wsl-secret` |
-| Requires | WSL/Linux with `pass` and/or `age` on PATH |
-| Default | **reads blocked** until you set `allowPrefixes` |
+| 环境 | WSL/Linux，PATH 上有 `pass` 和/或 `age` |
+| 默认 | **不配 `allowPrefixes` 就读不了**（故意的） |
+| 对比 | `dsh-wsl-cred` = Git 凭据提示；本插件 = 应用 API Key |
 
-## Why this plugin exists
+## 为什么要单独插件
 
-- **`dsh-wsl-cred`** → Git push/pull credential *hints* only  
-- **`dsh-wsl-secret`** → App secrets (OpenRouter, Discord bot token, …) from your password store
+- **`dsh-wsl-cred`** → 只给 Git 推送/拉取的凭据*提示*
+- **`dsh-wsl-secret`** → OpenRouter、Discord Bot Token 等应用密钥
 
-If `secret_status` shows `ready=false`, the plugin is installed but **not configured**. That is intentional.
+`secret_status` 显示 `ready=false` = 已安装但**未配置**，属正常安全默认。
 
-## 5-minute setup
+## 5 分钟上手
 
-### 1. Install tools (once)
+### 1. 装工具（一次）
 
 ```bash
-# Debian/Ubuntu example
 sudo apt install pass age
-# initialise pass if needed: pass init <gpg-id>
+# 需要时: pass init <gpg-id>
 ```
 
-### 2. Put secrets under one prefix
+### 2. 密钥放在同一前缀下
 
 ```bash
-pass insert dsh/openrouter    # paste API key, first line = secret
+pass insert dsh/openrouter
 pass insert dsh/discord-bot
 ```
 
-### 3. Allow that prefix in Cordis
+### 3. Cordis 放行该前缀
 
-Edit your profile `cordis.patch.yml` (example: `~/.dsh/profiles/web/cordis.patch.yml`):
+编辑 profile 的 `cordis.patch.yml`（例如 `~/.dsh/profiles/web/cordis.patch.yml`）：
 
 ```yaml
 plugins:
   dsh-wsl-secret:
     enabled: true
-    path: /mnt/c/Users/YOU/Desktop/AIFullStackDevelopment/dsh-wsl-secret
+    path: /mnt/c/Users/你/Desktop/AIFullStackDevelopment/dsh-wsl-secret
     config:
-      # pass: folder names under ~/.password-store
-      # age: absolute or ~/ filesystem roots
       allowPrefixes:
         - dsh
-        # - ~/secrets
-      reveal: false          # keep false; use secret_to_env instead
+        # - ~/secrets          # age 用文件系统根
+      reveal: false
       timeoutMs: 15000
 ```
 
-Restart DSH / reload the profile.
+重启 / 重载 profile。
 
-### 4. Agent flow (what to ask / what tools do)
+### 4. 推荐工具链
 
-| Step | Tool | Result |
-|------|------|--------|
-| Check | `secret_status` | `ready=true`, lists allowPrefixes |
-| Find | `secret_pass_list` | names only, e.g. `dsh/openrouter` |
-| Confirm | `secret_pass_exists` | `{ exists: true }` |
-| **Use** | `secret_to_env` | sets `process.env.OPENROUTER_API_KEY`, returns **preview only** |
-| Optional | `secret_pass_get` | preview (or full value only if `reveal: true` — avoid) |
-
-Example tool call:
+| 步骤 | 工具 | 结果 |
+|------|------|------|
+| 检查 | `secret_status` | `ready=true` |
+| 列举 | `secret_pass_list` | 只有名字 |
+| 确认 | `secret_pass_exists` | `{ exists: true }` |
+| **使用** | `secret_to_env` | 写入 `process.env`，聊天里只有 preview |
+| 可选 | `secret_pass_get` | 预览（少用；勿开 reveal） |
 
 ```json
 { "name": "secret_to_env", "arguments": {
@@ -74,35 +70,31 @@ Example tool call:
 }}
 ```
 
-After that, other tools in the **same dsh process** can read `process.env.OPENROUTER_API_KEY`. The chat UI only sees a redacted preview.
+之后**同一 dsh 进程**内其它工具可读 `process.env.OPENROUTER_API_KEY`。
 
-## Tools
+## 工具一览
 
-| Tool | Purpose |
-|------|---------|
-| `secret_status` | pass/age on PATH + allowlist + `ready` |
-| `secret_pass_list` | list entry **names** under allowlist |
-| `secret_pass_exists` | boolean exists check |
-| `secret_to_env` | **preferred** — pass → `process.env` |
-| `secret_pass_get` | read with preview / optional reveal |
-| `secret_age_to_env` | age file → `process.env` |
-| `secret_age_decrypt` | decrypt age file (preview / reveal) |
+| 工具 | 作用 |
+|------|------|
+| `secret_status` | pass/age、allowlist、`ready` |
+| `secret_pass_list` | 只列名字 |
+| `secret_pass_exists` | 是否存在 |
+| `secret_to_env` | **首选** pass → 环境变量 |
+| `secret_pass_get` | 预览读取 |
+| `secret_age_to_env` | age → 环境变量 |
+| `secret_age_decrypt` | age 解密（预览） |
 
-## Security model
+## 安全模型（摘要）
 
-1. Empty `allowPrefixes` → every read fails (safe default).  
-2. Pass names must match an allowlist prefix (`dsh` → `dsh/...`).  
-3. Age paths must sit under filesystem roots in the same list (`~/secrets/...`).  
-4. `reveal: false` (default): tool results never include the full secret.  
-5. Prefer `secret_to_env` / `secret_age_to_env` so the model never needs the raw string in context.  
-6. Never paste secrets into the chat.
+1. 空 `allowPrefixes` → 全部拒绝  
+2. pass 名必须匹配前缀（`dsh` → `dsh/...`）  
+3. age 路径必须在列表里的目录根下  
+4. 默认 `reveal: false`，结果不含完整密钥  
+5. 优先 `secret_to_env`，避免把明文塞进模型上下文  
+6. 永远不要把密钥贴进聊天  
 
-## Develop
-
-```bash
-npm test
-```
+更细的英文说明见 [README.en.md](./README.en.md)。
 
 ## License
 
-MIT — [LICENSE](./LICENSE)
+MIT
