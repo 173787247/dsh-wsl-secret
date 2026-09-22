@@ -4,6 +4,8 @@
       config:
         enabled: true
         timeoutMs: 15000
-        # Only these pass entry prefixes / age file globs may be read
+        # REQUIRED for reads — empty blocks everything (safe default).
+        # pass: "dsh" allows dsh/openrouter; age: "~/secrets" filesystem root
         allowPrefixes: []
+        # Prefer secret_to_env; keep reveal false
         reveal: false

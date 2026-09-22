@@ -1,7 +1,7 @@
 {
   "name": "dsh-wsl-secret",
-  "version": "0.1.0",
-  "description": "DeepSeek Harness WSL plugin: read-only pass/age secret lookup with path allowlist (never dumps full secrets into render by default).",
+  "version": "0.2.0",
+  "description": "DeepSeek Harness WSL plugin: pass/age secrets with allowlist; list/exists; secret_to_env without dumping values into chat.",
   "license": "MIT",
   "repository": { "type": "git", "url": "https://github.com/173787247/dsh-wsl-secret.git" },
   "type": "module",
