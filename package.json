@@ -1,0 +1,14 @@
+{
+  "name": "dsh-wsl-secret",
+  "version": "0.1.0",
+  "description": "DeepSeek Harness WSL plugin: read-only pass/age secret lookup with path allowlist (never dumps full secrets into render by default).",
+  "license": "MIT",
+  "repository": { "type": "git", "url": "https://github.com/173787247/dsh-wsl-secret.git" },
+  "type": "module",
+  "main": "index.js",
+  "engines": { "node": ">=18" },
+  "scripts": { "test": "node --test test/*.test.js" },
+  "files": ["index.js", "lib", "cordis.patch.yml", "README.md", "README.zh.md", "LICENSE", "CHANGELOG.md"],
+  "keywords": ["dsh-plugin", "wsl", "pass", "age", "secrets"],
+  "dsh": { "bundle": { "patch": "./cordis.patch.yml" } }
+}
