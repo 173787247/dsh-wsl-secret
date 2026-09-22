@@ -1,5 +1,7 @@
 # dsh-wsl-secret
 
+> **English → [README.md](./README.md)** · 下文为中文
+
 在 DSH（Cordis）里**安全读取** pass / age 密钥。
 
 | | |

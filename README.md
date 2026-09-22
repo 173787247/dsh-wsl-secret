@@ -1,5 +1,7 @@
 # dsh-wsl-secret
 
+> **中文文档 → [README.zh.md](./README.zh.md)** · English below
+
 Read **pass** / **age** secrets into a DSH (Cordis) session — safely.
 
 | | |
